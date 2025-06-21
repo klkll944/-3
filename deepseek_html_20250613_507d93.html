@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿莫的坏心情银行</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 100%;
+            max-width: 400px;
+            height: 700px;
+            background-color: #f0f0f0;
+            border: 15px solid #000;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .phone-notch {
+            width: 40%;
+            height: 25px;
+            background: #000;
+            position: absolute;
+            top: 0;
+            left: 30%;
+            border-radius: 0 0 15px 15px;
+            z-index: 10;
+        }
+        
+        .screen {
+            flex: 1;
+            padding: 60px 20px 80px;
+            overflow-y: auto;
+            background-color: #fff;
+            position: relative;
+        }
+        
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .page.active {
+            display: flex;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 15px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .emoji {
+            font-size: 30px;
+            margin: 5px;
+            filter: grayscale(100%);
+            opacity: 0.9;
+        }
+        
+        /* Login Page */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 0 20px;
+        }
+        
+        .login-box {
+            background: #f8f8f8;
+            border: 2px solid #000;
+            border-radius: 12px;
+            padding: 30px 25px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-title {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background: #333;
+        }
+        
+        .error-message {
+            color: #ff0000;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+        
+        /* ATM Page */
+        .balance-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .balance-label {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #000;
+            letter-spacing: 2px;
+        }
+        
+        .balance-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border: 2px solid #000;
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+        
+        .balance-fill {
+            height: 100%;
+            background: #000;
+            width: 15%;
+        }
+        
+        .atm-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .atm-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .atm-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+        
+        /* Diary Page */
+        .diary-entries {
+            margin-top: 20px;
+        }
+        
+        .diary-entry {
+            border-left: 3px solid #000;
+            padding: 15px 15px 15px 20px;
+            margin-bottom: 25px;
+            background: #f8f8f8;
+            position: relative;
+        }
+        
+        .diary-date {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #000;
+        }
+        
+        .diary-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        .diary-balance {
+            font-size: 13px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+        
+        .diary-balance.positive {
+            color: #008000;
+        }
+        
+        .diary-icon {
+            position: absolute;
+            left: -12px;
+            top: 15px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        /* Loan Page */
+        .loan-options {
+            margin-top: 20px;
+        }
+        
+        .loan-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: #f8f8f8;
+        }
+        
+        .loan-emoji {
+            font-size: 28px;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .loan-details {
+            flex: 1;
+        }
+        
+        .loan-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #000;
+        }
+        
+        .loan-description {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .loan-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #008000;
+        }
+        
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f0f0f0;
+            border-top: 2px solid #000;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 100px;
+            transition: background 0.3s;
+        }
+        
+        .nav-btn:disabled {
+            background: #888;
+            cursor: not-allowed;
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background: #333;
+        }
+        
+        .page-indicators {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 5px;
+        }
+        
+        .indicator.active {
+            background: #000;
+        }
+        
+        /* Character */
+        .character {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #000;
+            background: #e0e0e0;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .character-info {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="screen">
+            <!-- Login Page -->
+            <div id="login-page" class="page active">
+                <div class="header">
+                    <h1>阿莫的坏心情银行</h1>
+                    <p>心情资产管理系统</p>
+                </div>
+                
+                <div class="character">
+                    <div class="avatar">👦</div>
+                    <div class="character-info">
+                        阿莫，14岁，初中生。喜欢撒娇的绿茶弟弟，实际有点阴险，最喜欢姐姐。
+                    </div>
+                </div>
+                
+                <div class="login-container">
+                    <div class="login-box">
+                        <div class="login-title">身份验证</div>
+                        <input type="password" class="password-input" id="password" placeholder="请输入访问密码">
+                        <button class="submit-btn" onclick="checkPassword()">登录账户</button>
+                        <div class="error-message" id="error-msg"></div>
+                    </div>
+                </div>
+                
+                <div class="page-indicators">
+                    <div class="indicator active"></div>
+                    <div class="indicator"></div>
+                    <div class="indicator"></div>
+                </div>
+            </div>
+            
+            <!-- ATM Page -->
+            <div id="atm-page" class="page">
+                <div class="header">
+                    <h1>坏心情银行 ATM</h1>
+                    <p>当前心情资产情况</p>
+                </div>
+                
+                <div class="character">
+                    <div class="avatar">🏦</div>
+                </div>
+                
+                <div class="balance-display">
+                    <div class="balance-label">当前心情余额</div>
+                    <div class="balance-amount">15 🪙</div>
+                    <div class="balance-bar">
+                        <div class="balance-fill"></div>
+                    </div>
+                    <p>余额过低，需要姐姐的关心！</p>
+                </div>
+                
+                <div class="atm-actions">
+                    <div class="atm-btn">🗨</div>
+                    <div class="atm-btn">🎧</div>
+                    <div class="atm-btn">🎮</div>
+                    <div class="atm-btn">⚙</div>
+                </div>
+                
+                <div class="page-indicators">
+                    <div class="indicator"></div>
+                    <div class="indicator active"></div>
+                    <div class="indicator"></div>
+                </div>
+            </div>
+            
+            <!-- Diary Page -->
+            <div id="diary-page" class="page">
+                <div class="header">
+                    <h1>心情资金流水</h1>
+                    <p>阿莫的心情日记账</p>
+                </div>
+                
+                <div class="character">
+                    <div class="avatar">📝</div>
+                </div>
+                
+                <div class="diary-entries">
+                    <div class="diary-entry">
+                        <div class="diary-icon">📅</div>
+                        <div class="diary-date">2024年6月7日</div>
+                        <div class="diary-content">姐姐说周末要加班，不能陪我了... 感觉被抛弃了 😢</div>
+                        <div class="diary-balance">「余额-50」</div>
+                    </div>
+                    
+                    <div class="diary-entry">
+                        <div class="diary-icon">📅</div>
+                        <div class="diary-date">2024年6月5日</div>
+                        <div class="diary-content">看到姐姐和其他男生聊天，心情瞬间不好了！</div>
+                        <div class="diary-balance">「余额-80」</div>
+                    </div>
+                    
+                    <div class="diary-entry">
+                        <div class="diary-icon">📅</div>
+                        <div class="diary-date">2024年6月3日</div>
+                        <div class="diary-content">姐姐给我买了冰淇淋 🍦，虽然很开心，但她自己也在吃... 应该只给我买才对！</div>
+                        <div class="diary-balance">「余额+30」</div>
+                    </div>
+                    
+                    <div class="diary-entry">
+                        <div class="diary-icon">📅</div>
+                        <div class="diary-date">2024年6月1日</div>
+                        <div class="diary-content">儿童节姐姐陪我去游乐园了！虽然她说我已经不是儿童了... 但还是很开心 🎢</div>
+                        <div class="diary-balance positive">「余额+70」</div>
+                    </div>
+                    
+                    <div class="diary-entry">
+                        <div class="diary-icon">📅</div>
+                        <div class="diary-date">2024年5月28日</div>
+                        <div class="diary-content">姐姐去和其他人约会了，一整天都没理我 😤</div>
+                        <div class="diary-balance">「余额-100」</div>
+                    </div>
+                </div>
+                
+                <div class="page-indicators">
+                    <div class="indicator"></div>
+                    <div class="indicator"></div>
+                    <div class="indicator active"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn" class="nav-btn" disabled onclick="prevPage()">上一页</button>
+            <button id="next-btn" class="nav-btn" onclick="nextPage()">下一页</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const indicators = document.querySelectorAll('.indicator');
+        const passwordInput = document.getElementById('password');
+        const errorMsg = document.getElementById('error-msg');
+        
+        // 页面切换函数
+        function showPage(pageIndex) {
+            // 隐藏所有页面
+            pages.forEach(page => page.classList.remove('active'));
+            indicators.forEach(ind => ind.classList.remove('active'));
+            
+            // 显示当前页面
+            pages[pageIndex].classList.add('active');
+            indicators[pageIndex].classList.add('active');
+            
+            // 更新按钮状态
+            prevBtn.disabled = (pageIndex === 0);
+            nextBtn.disabled = (pageIndex === pages.length - 1);
+            
+            currentPage = pageIndex;
+        }
+        
+        function nextPage() {
+            if (currentPage < pages.length - 1) {
+                showPage(currentPage + 1);
+            }
+        }
+        
+        function prevPage() {
+            if (currentPage > 0) {
+                showPage(currentPage - 1);
+            }
+        }
+        
+        // 密码检查函数
+        function checkPassword() {
+            const password = passwordInput.value.trim();
+            const correctPassword = "最喜欢阿莫";
+            
+            if (password === correctPassword) {
+                showPage(1); // 跳转到ATM页面
+                errorMsg.textContent = "";
+            } else {
+                errorMsg.textContent = "密码错误！姐姐真的最喜欢阿莫吗？";
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        }
+        
+        // 按Enter键提交密码
+        passwordInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // 初始化页面
+        showPage(0);
+    </script>
+</body>
+</html>

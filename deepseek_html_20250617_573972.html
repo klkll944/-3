@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>裴安的微博</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f6f6f6;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ff4d4d;
+        }
+        .profile-info h2 {
+            margin: 0;
+            color: #333;
+        }
+        .profile-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .post-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .post-input {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            margin-bottom: 10px;
+        }
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .post-btn {
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .weibo-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .weibo-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .weibo-content {
+            margin: 10px 0;
+        }
+        .weibo-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .weibo-images img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 5px;
+        }
+        .weibo-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #999;
+            font-size: 14px;
+        }
+        .delete-btn {
+            color: #ff4d4d;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 用户信息区 -->
+    <div class="profile">
+        <img id="avatar" class="profile-avatar" src="https://via.placeholder.com/80" alt="裴安的头像">
+        <div class="profile-info">
+            <h2>裴安 <span style="color: #1da1f2;">🚹</span></h2>
+            <p>高中生 | 桀骜不驯，爱谁谁</p>
+            <p><small>"作业？那是什么？能吃吗？"</small></p>
+        </div>
+    </div>
+
+    <!-- 微博发布区 -->
+    <div class="post-box">
+        <textarea id="postText" class="post-input" placeholder="裴安今天想说点什么..."></textarea>
+        <div class="post-actions">
+            <div>
+                <input type="file" id="imageUpload" accept="image/*" multiple class="hidden">
+                <button onclick="document.getElementById('imageUpload').click()" class="upload-btn">上传图片</button>
+                <span id="fileCount">0张图片</span>
+            </div>
+            <button onclick="postWeibo()" class="post-btn">发布</button>
+        </div>
+        <div id="imagePreviews" class="weibo-images"></div>
+    </div>
+
+    <!-- 微博展示区 -->
+    <div class="weibo-list" id="weiboList"></div>
+
+    <script>
+        // 全局变量
+        let uploadedImages = [];
+        const MAX_IMAGES = 9;
+
+        // 初始化：加载头像和微博
+        loadAvatar();
+        loadWeibos();
+
+        // 监听图片上传
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > MAX_IMAGES) {
+                alert(`最多上传${MAX_IMAGES}张图片！`);
+                return;
+            }
+
+            uploadedImages = Array.from(files);
+            document.getElementById('fileCount').textContent = `${files.length}张图片`;
+
+            // 显示预览
+            const previewContainer = document.getElementById('imagePreviews');
+            previewContainer.innerHTML = '';
+            uploadedImages.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // 上传头像
+        function loadAvatar() {
+            const savedAvatar = localStorage.getItem('avatar');
+            if (savedAvatar) {
+                document.getElementById('avatar').src = savedAvatar;
+            }
+
+            document.getElementById('avatar').addEventListener('click', function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        document.getElementById('avatar').src = event.target.result;
+                        localStorage.setItem('avatar', event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            });
+        }
+
+        // 发布微博
+        function postWeibo() {
+            const text = document.getElementById('postText').value.trim();
+            if (!text && uploadedImages.length === 0) {
+                alert('写点内容或上传图片吧！');
+                return;
+            }
+
+            const weibo = {
+                id: Date.now(),
+                text: text || "（无文案）",
+                images: [],
+                time: new Date().toLocaleString()
+            };
+
+            // 转换图片为Base64
+            if (uploadedImages.length > 0) {
+                const readers = uploadedImages.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (event) => resolve(event.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                Promise.all(readers).then(images => {
+                    weibo.images = images;
+                    saveWeibo(weibo);
+                });
+            } else {
+                saveWeibo(weibo);
+            }
+        }
+
+        // 保存微博到 localStorage
+        function saveWeibo(weibo) {
+            const weibos = JSON.parse(localStorage.getItem('weibos') || '[]');
+            weibos.unshift(weibo); // 新微博放在最前面
+            localStorage.setItem('weibos', JSON.stringify(weibos));
+            loadWeibos();
+            resetPostForm();
+        }
+
+        // 加载所有微博
+        function loadWeibos() {
+            const weibos = JSON.parse(localStorage.getItem('weibos') || '[]');
+            const weiboList = document.getElementById('weiboList');
+            weiboList.innerHTML = '';
+
+            if (weibos.length === 0) {
+                weiboList.innerHTML = '<p style="padding: 20px; text-align: center; color: #999;">还没有微博，快发一条吧！</p>';
+                return;
+            }
+
+            weibos.forEach(weibo => {
+                const weiboItem = document.createElement('div');
+                weiboItem.className = 'weibo-item';
+                weiboItem.innerHTML = `
+                    <div class="weibo-content">${weibo.text}</div>
+                    ${weibo.images.length > 0 ? `
+                        <div class="weibo-images">
+                            ${weibo.images.map(img => `<img src="${img}">`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="weibo-meta">
+                        <span>${weibo.time}</span>
+                        <span class="delete-btn" onclick="deleteWeibo(${weibo.id})">删除</span>
+                    </div>
+                `;
+                weiboList.appendChild(weiboItem);
+            });
+        }
+
+        // 删除微博
+        function deleteWeibo(id) {
+            if (!confirm('确定删除这条微博吗？')) return;
+            const weibos = JSON.parse(localStorage.getItem('weibos') || '[]');
+            const updatedWeibos = weibos.filter(weibo => weibo.id !== id);
+            localStorage.setItem('weibos', JSON.stringify(updatedWeibos));
+            loadWeibos();
+        }
+
+        // 重置发布表单
+        function resetPostForm() {
+            document.getElementById('postText').value = '';
+            document.getElementById('imagePreviews').innerHTML = '';
+            document.getElementById('fileCount').textContent = '0张图片';
+            uploadedImages = [];
+        }
+    </script>
+</body>
+</html>
